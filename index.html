@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Number Guessing Game</title>
+    <style>
+        body {
+            background: linear-gradient(135deg, #6a11cb, #2575fc);
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding-top: 40px;
+            color: white;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            width: 350px;
+            margin: auto;
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.3);
+            transition: 0.3s;
+        }
+
+        /* Shake animation */
+        .shake {
+            animation: shakeAnimation 0.3s ease;
+        }
+        @keyframes shakeAnimation {
+            0% { transform: translateX(0px); }
+            25% { transform: translateX(-8px); }
+            50% { transform: translateX(8px); }
+            75% { transform: translateX(-8px); }
+            100% { transform: translateX(0px); }
+        }
+
+        /* Glow animation */
+        .correct {
+            animation: glow 1s ease;
+            box-shadow: 0 0 25px #00ff0d;
+        }
+        @keyframes glow {
+            from { box-shadow: 0 0 0px #00ff0d; }
+            to { box-shadow: 0 0 25px #00ff0d; }
+        }
+
+        /* Hearts animation */
+        .heartBreak {
+            animation: breakAnim 0.4s ease;
+        }
+
+        @keyframes breakAnim {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.3); color: #ff4d4d; }
+            100% { transform: scale(1); color: red; }
+        }
+
+        /* Confetti */
+        .confetti {
+            position: fixed;
+            top: -10px;
+            width: 10px;
+            height: 10px;
+            background: yellow;
+            animation: fall 2s linear infinite;
+        }
+        @keyframes fall {
+            from { transform: translateY(0) rotate(0deg); }
+            to { transform: translateY(100vh) rotate(360deg); }
+        }
+
+        img {
+            width: 120px;
+            margin-bottom: 15px;
+        }
+
+        input {
+            padding: 10px;
+            width: 70%;
+            border: none;
+            border-radius: 10px;
+            margin-top: 10px;
+            font-size: 18px;
+        }
+
+        button {
+            margin-top: 15px;
+            padding: 10px 20px;
+            background-color: #ffeb3b;
+            border: none;
+            font-size: 18px;
+            border-radius: 10px;
+            cursor: pointer;
+            color: black;
+        }
+
+        button:hover {
+            background-color: #ffe100;
+        }
+
+        #result, #hint {
+            margin-top: 15px;
+            font-size: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container" id="gameBox">
+        <img src="https://cdn-icons-png.flaticon.com/512/3209/3209265.png" alt="Guess">
+        <h2>🎯 Number Guessing Game</h2>
+        <p>I have selected a number between <b>1–100</b>.</p>
+
+        <input type="number" id="guessInput" placeholder="Enter guess">
+
+        <br>
+        <button onclick="playClick(); checkGuess();">Guess</button>
+
+        <!-- Lives -->
+        <p id="lives" style="font-size: 28px; margin-top: 10px;">❤️❤️❤️❤️❤️</p>
+
+        <p id="result"></p>
+        <p id="hint"></p>
+
+        <button id="restartBtn" onclick="restartGame()" style="display:none; background:#00ff89;">Restart</button>
+
+        <!-- Sounds -->
+        <audio id="wrongSound" src="https://www.myinstants.com/media/sounds/wrong-answer-sound-effect.mp3"></audio>
+        <audio id="correctSound" src="https://www.myinstants.com/media/sounds/tuturu_1.mp3"></audio>
+        <audio id="clickSound" src="https://www.myinstants.com/media/sounds/click.mp3"></audio>
+    </div>
+
+    <script>
+        let number = Math.floor(Math.random() * 100) + 1;
+        let chances = 5;
+
+        function playClick() {
+            document.getElementById("clickSound").play();
+        }
+
+        function updateHearts() {
+            let heartDisplay = "";
+            for (let i = 0; i < 5; i++) {
+                heartDisplay += (i < chances) ? "❤️" : "💔";
+            }
+
+            let lives = document.getElementById("lives");
+            lives.innerHTML = heartDisplay;
+
+            lives.classList.add("heartBreak");
+            setTimeout(() => lives.classList.remove("heartBreak"), 400);
+        }
+
+        function makeConfetti() {
+            for (let i = 0; i < 30; i++) {
+                let c = document.createElement("div");
+                c.classList.add("confetti");
+                c.style.left = Math.random() * 100 + "vw";
+                c.style.background = "#" + Math.floor(Math.random() * 16777215).toString(16);
+                document.body.appendChild(c);
+
+                setTimeout(() => c.remove(), 2000);
+            }
+        }
+
+        function checkGuess() {
+            let guess = Number(document.getElementById("guessInput").value);
+            let box = document.getElementById("gameBox");
+
+            if (!guess) {
+                document.getElementById("result").innerHTML = "⚠️ Enter a number!";
+                return;
+            }
+
+            if (chances <= 0) return;
+
+            if (guess > number) {
+                document.getElementById("result").innerHTML = "📉 Too high!";
+                document.getElementById("hint").innerHTML = "💡 Hint: Between "+(number -10)+"and"+(number +10);
+                chances--;
+                updateHearts();
+
+                box.classList.add("shake");
+                document.getElementById("wrongSound").play();
+                setTimeout(() => box.classList.remove("shake"), 300);
+            }
+            else if (guess < number) {
+                document.getElementById("result").innerHTML = "📈 Too low!";
+                document.getElementById("hint").innerHTML = "💡 Hint: Between"+(number -10)+"and"+(number +10);
+                chances--;
+                updateHearts();
+
+                box.classList.add("shake");
+                document.getElementById("wrongSound").play();
+                setTimeout(() => box.classList.remove("shake"), 300);
+            }
+            else {
+                document.getElementById("result").innerHTML = "🎉 Correct! You guessed it!";
+                document.getElementById("hint").innerHTML = "";
+                document.getElementById("correctSound").play();
+
+                box.classList.add("correct");
+                setTimeout(() => box.classList.remove("correct"), 1000);
+
+                makeConfetti();
+                document.getElementById("restartBtn").style.display = "block";
+                return;
+            }
+
+            if (chances === 0) {
+                document.getElementById("result").innerHTML = "❌ Game Over!";
+                document.getElementById("restartBtn").style.display = "block";
+            }
+        }
+
+        function restartGame() {
+            number = Math.floor(Math.random() * 100) + 1;
+            chances = 5;
+            document.getElementById("result").innerHTML = "";
+            document.getElementById("hint").innerHTML = "";
+            document.getElementById("guessInput").value = "";
+            document.getElementById("restartBtn").style.display = "none";
+            updateHearts();
+        }
+    </script>
+
+</body>
+</html>
